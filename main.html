@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validador de Senha</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #1e3c72;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 50px 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            background: #f8f9fa;
+        }
+
+        input:focus {
+            border-color: #2a5298;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.1);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px;
+            color: #666;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .toggle-password:hover {
+            color: #2a5298;
+        }
+
+        /* Barra de força */
+        .strength-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.4s ease, background-color 0.4s ease;
+        }
+
+        .strength-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: right;
+            margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        /* Lista de requisitos */
+        .requirements {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .requirements li {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .requirements li .icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.75rem;
+            background: #ddd;
+            color: white;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .requirements li.valid {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .requirements li.valid .icon {
+            background: #4caf50;
+        }
+
+        .requirements li.invalid {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .requirements li.invalid .icon {
+            background: #ef5350;
+        }
+
+        /* Botão */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Resultado */
+        .result {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s ease;
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+
+        .result.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #ef5350;
+        }
+
+        .result .message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Responsivo */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Validador de Senha</h1>
+        <p class="subtitle">Digite uma senha para verificar sua força</p>
+
+        <div class="input-group">
+            <label for="senha">Senha</label>
+            <div class="input-wrapper">
+                <input 
+                    type="password" 
+                    id="senha" 
+                    placeholder="Digite sua senha..."
+                    autocomplete="new-password"
+                    maxlength="64"
+                >
+                <button 
+                    type="button" 
+                    class="toggle-password" 
+                    id="togglePassword"
+                    aria-label="Mostrar/ocultar senha"
+                >👁️</button>
+            </div>
+        </div>
+
+        <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill"></div>
+        </div>
+        <div class="strength-text" id="strengthText"></div>
+
+        <ul class="requirements" id="requirements">
+            <li data-rule="length">
+                <span class="icon">✕</span>
+                <span>Pelo menos 8 caracteres</span>
+            </li>
+            <li data-rule="uppercase">
+                <span class="icon">✕</span>
+                <span>Uma letra maiúscula</span>
+            </li>
+            <li data-rule="lowercase">
+                <span class="icon">✕</span>
+                <span>Uma letra minúscula</span>
+            </li>
+            <li data-rule="number">
+                <span class="icon">✕</span>
+                <span>Um número</span>
+            </li>
+            <li data-rule="special">
+                <span class="icon">✕</span>
+                <span>Um caractere especial</span>
+            </li>
+        </ul>
+
+        <button class="btn" id="validateBtn" disabled>Validar Senha</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Elementos do DOM
+        const senhaInput = document.getElementById('senha');
+        const togglePassword = document.getElementById('togglePassword');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        const requirementsList = document.getElementById('requirements');
+        const validateBtn = document.getElementById('validateBtn');
+        const resultDiv = document.getElementById('result');
+
+        // Regras de validação (mesmas do PHP)
+        const rules = {
+            length: {
+                test: (senha) => senha.length >= 8,
+                message: 'A senha deve ter pelo menos 8 caracteres.'
+            },
+            uppercase: {
+                test: (senha) => /[A-Z]/.test(senha),
+                message: 'A senha deve ter uma letra maiúscula.'
+            },
+            lowercase: {
+                test: (senha) => /[a-z]/.test(senha),
+                message: 'A senha deve ter uma letra minúscula.'
+            },
+            number: {
+                test: (senha) => /[0-9]/.test(senha),
+                message: 'A senha deve ter um número.'
+            },
+            special: {
+                test: (senha) => /[^a-zA-Z0-9]/.test(senha),
+                message: 'A senha deve ter um caractere especial.'
+            }
+        };
+
+        // Mostrar/ocultar senha
+        togglePassword.addEventListener('click', () => {
+            const type = senhaInput.type === 'password' ? 'text' : 'password';
+            senhaInput.type = type;
+            togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Avaliar senha em tempo real
+        senhaInput.addEventListener('input', () => {
+            const senha = senhaInput.value;
+            const results = validatePassword(senha);
+            updateUI(results, senha);
+        });
+
+        // Validar ao pressionar Enter
+        senhaInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !validateBtn.disabled) {
+                validateBtn.click();
+            }
+        });
+
+        // Botão validar
+        validateBtn.addEventListener('click', () => {
+            const senha = senhaInput.value;
+            const results = validatePassword(senha);
+            const allValid = Object.values(results).every(r => r.valid);
+
+            resultDiv.className = 'result show ' + (allValid ? 'success' : 'error');
+
+            if (allValid) {
+                resultDiv.innerHTML = `
+                    <div class="message">
+                        <span>✅</span>
+                        <span>SENHA VÁLIDA!</span>
+                    </div>
+                `;
+            } else {
+                const errors = Object.values(results)
+                    .filter(r => !r.valid)
+                    .map(r => r.message);
+
+                resultDiv.innerHTML = `
+                    <div class="message" style="flex-direction: column; align-items: flex-start;">
+                        <div style="margin-bottom: 8px;">❌ <strong>SENHA INVÁLIDA!</strong></div>
+                        ${errors.map(e => `<div style="font-size: 0.85rem; font-weight: 400;">• ${e}</div>`).join('')}
+                    </div>
+                `;
+            }
+        });
+
+        // Função principal de validação
+        function validatePassword(senha) {
+            const results = {};
+            for (const [key, rule] of Object.entries(rules)) {
+                results[key] = {
+                    valid: rule.test(senha),
+                    message: rule.message
+                };
+            }
+            return results;
+        }
+
+        // Atualizar interface
+        function updateUI(results, senha) {
+            let validCount = 0;
+            const total = Object.keys(results).length;
+
+            // Atualizar lista de requisitos
+            for (const [key, result] of Object.entries(results)) {
+                const li = requirementsList.querySelector(`[data-rule="${key}"]`);
+                const icon = li.querySelector('.icon');
+
+                li.classList.remove('valid', 'invalid');
+
+                if (senha.length === 0) {
+                    icon.textContent = '✕';
+                    return;
+                }
+
+                if (result.valid) {
+                    li.classList.add('valid');
+                    icon.textContent = '✓';
+                    validCount++;
+                } else {
+                    li.classList.add('invalid');
+                    icon.textContent = '✕';
+                }
+            }
+
+            // Calcular força
+            const percentage = senha.length === 0 ? 0 : (validCount / total) * 100;
+
+            // Atualizar barra de força
+            strengthFill.style.width = percentage + '%';
+
+            let color, text;
+            if (percentage === 0) {
+                color = '#e0e0e0';
+                text = '';
+            } else if (percentage <= 40) {
+                color = '#ef5350';
+                text = 'Fraca';
+            } else if (percentage <= 60) {
+                color = '#ff9800';
+                text = 'Média';
+            } else if (percentage <= 80) {
+                color = '#ffc107';
+                text = 'Boa';
+            } else {
+                color = '#4caf50';
+                text = 'Forte';
+            }
+
+            strengthFill.style.backgroundColor = color;
+            strengthText.textContent = text;
+            strengthText.style.color = color;
+
+            // Habilitar/desabilitar botão
+            validateBtn.disabled = senha.length === 0;
+
+            // Esconder resultado ao digitar
+            resultDiv.classList.remove('show');
+        }
+
+        // Foco inicial
+        senhaInput.focus();
+    </script>
+</body>
+</html>
